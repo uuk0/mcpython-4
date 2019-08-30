@@ -7,14 +7,14 @@ The new contributor (xkcdjerry) should be mentioned
 cleanup tasks (should be done regulary):
     document every change
     go to EVERY PYTHON FILE and do:
-        have we unused imports? -> delete
+        have we unused imports? -> delete                          (use PyCharm's "Optmize Imports")
         look at EVERY name and check if it is good
-        has every file, class & function an docstring?
+        has every file, class & function an docstring?             (use PyCharm's Auto Docstring Check)(File>Settings>Editor>Inspections>Python>Missing or empty docstring)
         is the code with enough comments?
         is every code reachable?
         have we outdated code which should be updated?
         is there an way for every interested function / field to overwrite
-        could this file splitted into diffrent?
+        could this file splitted into different?
         could this class be splitted into seperated / super - child classes?
         could this function be splitted into diffrent for better handling?
         should be this function be part of the util-code?
