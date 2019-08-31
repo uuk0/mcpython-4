@@ -27,6 +27,7 @@ commandhandler = None
 commandparser = None
 worldgenerationhandler = None
 biomehandler = None
+entityhandler = None
 
 modelloader = None
 
