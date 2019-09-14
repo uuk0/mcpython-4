@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -10,68 +10,46 @@ import globals as G
 
 
 def get_max_y(pos):
-    """gets the max y at a x,y,z pos"""
-    x, y, z = normalize(pos)
+    """gets the max y at a x,y,z or x,z pos"""
+    x, y, z = normalize(pos if len(pos) == 3 else (pos[0], 0, pos[1]))
     chunk = G.world.get_active_dimension().get_chunk_for_position(pos)
-    highmap = chunk.get_value('highmap')
-    y = highmap[x, z][0][1]
+    heightmap = chunk.get_value('heightmap')
+    y = heightmap[x, z][0][1]
     return y + 2  # account for the distance from head to foot
 
 
-def cube_vertices(x, y, z, n):
+def cube_vertices(x, y, z, nx, ny, nz, faces=(True, True, True, True, True, True)):
     """ Return the vertices of the cube at position x, y, z with size 2*n.
 
     """
-    return [
-        x - n, y + n, z - n, x - n, y + n, z + n, x + n, y + n, z + n, x + n, y + n, z - n,  # top
-        x - n, y - n, z - n, x + n, y - n, z - n, x + n, y - n, z + n, x - n, y - n, z + n,  # bottom
-        x - n, y - n, z - n, x - n, y - n, z + n, x - n, y + n, z + n, x - n, y + n, z - n,  # left
-        x + n, y - n, z + n, x + n, y - n, z - n, x + n, y + n, z - n, x + n, y + n, z + n,  # right
-        x - n, y - n, z + n, x + n, y - n, z + n, x + n, y + n, z + n, x - n, y + n, z + n,  # front
-        x + n, y - n, z - n, x - n, y - n, z - n, x - n, y + n, z - n, x + n, y + n, z - n,  # back
-    ]
+    top = [x - nx, y + ny, z - nz, x - nx, y + ny, z + nz, x + nx, y + ny, z + nz, x + nx, y + ny, z - nz] if faces[0] \
+        else []
+    bottom = [x - nx, y - ny, z - nz, x + nx, y - ny, z - nz, x + nx, y - ny, z + nz, x - nx, y - ny, z + nz] if \
+        faces[1] else []
+    left = [x - nx, y - ny, z - nz, x - nx, y - ny, z + nz, x - nx, y + ny, z + nz, x - nx, y + ny, z - nz] if \
+        faces[2] else []
+    right = [x + nx, y - ny, z + nz, x + nx, y - ny, z - nz, x + nx, y + ny, z - nz, x + nx, y + ny, z + nz] if \
+        faces[3] else []
+    front = [x - nx, y - ny, z + nz, x + nx, y - ny, z + nz, x + nx, y + ny, z + nz, x - nx, y + ny, z + nz] if \
+        faces[4] else []
+    back = [x + nx, y - ny, z - nz, x - nx, y - ny, z - nz, x - nx, y + ny, z - nz, x + nx, y + ny, z - nz] if \
+        faces[5] else []
+    return top + bottom + left + right + front + back
 
 
-def cube_vertices_2(x, y, z, nx, ny, nz):
-    """ Return the vertices of the cube at position x, y, z with size 2*n.
-
-    """
-    return [
-        x - nx, y + ny, z - nz, x - nx, y + ny, z + nz, x + nx, y + ny, z + nz, x + nx, y + ny, z - nz,  # top
-        x - nx, y - ny, z - nz, x + nx, y - ny, z - nz, x + nx, y - ny, z + nz, x - nx, y - ny, z + nz,  # bottom
-        x - nx, y - ny, z - nz, x - nx, y - ny, z + nz, x - nx, y + ny, z + nz, x - nx, y + ny, z - nz,  # left
-        x + nx, y - ny, z + nz, x + nx, y - ny, z - nz, x + nx, y + ny, z - nz, x + nx, y + ny, z + nz,  # right
-        x - nx, y - ny, z + nz, x + nx, y - ny, z + nz, x + nx, y + ny, z + nz, x - nx, y + ny, z + nz,  # front
-        x + nx, y - ny, z - nz, x - nx, y - ny, z - nz, x - nx, y + ny, z - nz, x + nx, y + ny, z - nz,  # back
-    ]
-
-
-def tex_coord(x, y, n=16):
+def tex_coord(x, y, size=(32, 32)):
     """ Return the bounding vertices of the texture square.
 
     """
-    m = 1.0 / n
-    dx = x * m
-    dy = y * m
-    return dx, dy, dx + m, dy, dx + m, dy + m, dx, dy + m
+    mx = 1. / size[0]
+    my = 1. / size[1]
+    dx = x * mx
+    dy = y * my
+    return dx, dy, dx + mx, dy, dx + mx, dy + my, dx, dy + my
 
 
-def tex_coords(top, bottom, side):
-    """ Return a list of the texture squares for the top, bottom and side.
-
-    """
-    top = tex_coord(*top)
-    bottom = tex_coord(*bottom)
-    side = tex_coord(*side)
-    result = []
-    result.extend(top)
-    result.extend(bottom)
-    result.extend(side * 4)
-    return result
-
-
-def tex_coords_2(*args):
-    """ Return a list of the texture squares for the top, bottom and side.
+def tex_coords(*args, size=(32, 32)):
+    """ Return a list of the texture squares for the top, bottom and sides.
 
     """
     args = list(args)
@@ -79,13 +57,13 @@ def tex_coords_2(*args):
         if arg is None:
             arg = (0, 0)
         args[i] = arg
-    top, bottom, N, E, W, S = tuple(args)
-    top = tex_coord(*top)
-    bottom = tex_coord(*bottom)
-    n = tex_coord(*N)
-    e = tex_coord(*E)
-    s = tex_coord(*S)
-    w = tex_coord(*W)
+    top, bottom, N, S, E, W = tuple(args)
+    top = tex_coord(*top, size=size)
+    bottom = tex_coord(*bottom, size=size)
+    n = tex_coord(*N, size=size)
+    e = tex_coord(*E, size=size)
+    s = tex_coord(*S, size=size)
+    w = tex_coord(*W, size=size)
     result = []
     result.extend(top)
     result.extend(bottom)
@@ -133,3 +111,36 @@ def sectorize(position):
     x, y, z = normalize(position)
     x, z = x // 16, z // 16
     return x, z
+
+
+# code from https://stackoverflow.com/questions/11557241/python-sorting-a-dependency-list
+def topological_sort(items):
+    """
+    'items' is an iterable of (item, dependencies) pairs, where 'dependencies'
+    is an iterable of the same type as 'items'.
+
+    If 'items' is a generator rather than a data structure, it should not be
+    empty. Passing an empty generator for 'items' (zero yields before return)
+    will cause topological_sort() to raise TopologicalSortFailure.
+
+    An empty iterable (e.g. list, tuple, set, ...) produces no items but
+    raises no exception.
+    """
+    provided = set()
+    while items:
+        remaining_items = []
+        emitted = False
+
+        for item, dependencies in items:
+            if provided.issuperset(dependencies):
+                yield item
+                provided.add(item)
+                emitted = True
+            else:
+                remaining_items.append( (item, dependencies) )
+
+        if not emitted:
+            raise ValueError()
+
+        items = remaining_items
+

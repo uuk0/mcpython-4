@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -82,7 +82,7 @@ class Player:
                 self.xp_level += 1
 
     def add_xp_level(self, xp_levels: int):
-        self.xp_level += 1
+        self.xp_level += xp_levels
 
     def add_to_free_place(self, itemstack: gui.ItemStack.ItemStack) -> bool:
         """
@@ -135,6 +135,7 @@ class Player:
         self.active_inventory_slot = 0
         self.harts = 20
         self.hunger = 20
+        globals.window.dy = 0
 
     def _get_position(self):
         return globals.window.position

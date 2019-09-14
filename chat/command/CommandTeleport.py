@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -10,11 +10,15 @@ import chat.command.Command
 from chat.command.Command import ParseBridge, ParseType, ParseMode, SubCommand
 
 
-@G.commandhandler
+@G.registry
 class CommandKill(chat.command.Command.Command):
+    """
+    class for /setblock command
+    """
+
     @staticmethod
     def insert_parse_bridge(parsebridge: ParseBridge):
-        parsebridge.main_entry = ["tp", "teleport"]
+        parsebridge.main_entry = ["tp", "teleport"]  # both are valid
         parsebridge.add_subcommand(SubCommand(ParseType.SELECTOR).add_subcommand(SubCommand(ParseType.SELECTOR)).
                                    add_subcommand(SubCommand(ParseType.POSITION))).\
             add_subcommand(SubCommand(ParseType.POSITION))

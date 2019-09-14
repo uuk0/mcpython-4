@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -10,8 +10,12 @@ import chat.command.Command
 from chat.command.Command import SubCommand, ParseType, ParseMode, ParseBridge
 
 
-@G.commandhandler
+@G.registry
 class CommandHelp(chat.command.Command.Command):
+    """
+    class for /help command
+    """
+
     @staticmethod
     def insert_parse_bridge(parsebridge: ParseBridge):
         parsebridge.main_entry = ["help", "?"]
@@ -59,8 +63,9 @@ class CommandHelp(chat.command.Command.Command):
                 "/help <command>: returns help for given command if found"]
 
 
+# generate help pages
 PAGES = []
-for command in G.commandhandler.commands:
+for command, _ in G.commandparser.commandparsing.values():
     PAGES += command.get_help()
 
 PAGES.sort(key=lambda x: x[0])

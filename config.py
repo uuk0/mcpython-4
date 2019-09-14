@@ -1,11 +1,12 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
 import math
+import util.enums
 
 
 TICKS_PER_SEC = 60
@@ -41,13 +42,29 @@ PLAYER_HEIGHT = 2
 TEXTURE_PATH = 'assets/texture.png'
 
 FACES = [
-    ( 0, 1, 0),
-    ( 0,-1, 0),
+    (0, 1, 0),
+    (0, -1, 0),
     (-1, 0, 0),
-    ( 1, 0, 0),
-    ( 0, 0, 1),
-    ( 0, 0,-1),
+    (1, 0, 0),
+    (0, 0, 1),
+    (0, 0, -1),
 ]
+
+_ADVANCED_FACES = [[[(x, y, z) for z in range(-1, 2)] for y in range(-1, 2)] for x in range(-1, 2)]
+ADVANCED_FACES = []
+for e in _ADVANCED_FACES:
+    for i in e:
+        for m in e:
+            for x in m:
+                if any(m): ADVANCED_FACES.append(x)
+del _ADVANCED_FACES
+# print(ADVANCED_FACES)
+
+FACE_NAMES = [util.enums.EnumSide.U, util.enums.EnumSide.D,
+              util.enums.EnumSide.N, util.enums.EnumSide.E, util.enums.EnumSide.S, util.enums.EnumSide.W]
+
+REVERSED_FACE_NAMES = [util.enums.EnumSide.D, util.enums.EnumSide.U,
+                       util.enums.EnumSide.S, util.enums.EnumSide.W, util.enums.EnumSide.N, util.enums.EnumSide.E]
 
 
 RANDOM_TICK_SPEED = 1

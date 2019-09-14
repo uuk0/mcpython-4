@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -10,8 +10,16 @@ import traceback
 
 
 class EventReSubscriber:
-    def __init__(self, handler=None):
-        self.handler = handler
+    """
+    entry to make it possible to notate @G.eventhandler(eventname)
+    """
+
+    def __init__(self, eventhandler):
+        """
+        creates the eventresubscriber
+        :param eventhandler: the eventhandler to re-call to
+        """
+        self.handler = eventhandler
         self.eventname = None
         self.function = None
         self.call_active = None
@@ -27,12 +35,22 @@ class EventReSubscriber:
 
 
 class EventHandler:
+    """
+    main class for event handling
+    """
+
     def __init__(self):
         self.event_names = []  # str[]
         self.event_registrations = {}  # str: event -> function[]
         self.eventresubscriber = [EventReSubscriber(self) for _ in range(10)]
 
     def __call__(self, eventname, callactive=True):
+        """
+        register an callback for these
+        :param eventname: the eventname
+        :param callactive: if we should register it after assinging or not
+        :return: an eventresubscriber object
+        """
         if len(self.eventresubscriber) == 0:
             self.eventresubscriber.append(EventReSubscriber(self))
         eventresubscriber = self.eventresubscriber.pop(0)
@@ -83,6 +101,8 @@ class EventHandler:
 
 handler = G.eventhandler = EventHandler()
 
+# register event names
+
 handler.add_event_name("game:startup")
 handler.add_event_name("game:load_finished")
 handler.add_event_name("game:gameloop_startup")
@@ -94,6 +114,7 @@ handler.add_event_name("user:mouse:press")
 handler.add_event_name("user:mouse:release")
 handler.add_event_name("user:mouse:motion")
 handler.add_event_name("user:mouse:drag")
+handler.add_event_name("user:mouse:scroll")
 
 handler.add_event_name("user:keyboard:press")
 handler.add_event_name("user:keyboard:release")

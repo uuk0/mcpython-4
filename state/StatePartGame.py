@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -13,6 +13,7 @@ import pyglet
 import gui.ItemStack
 import config
 import util.math
+import time
 
 
 class StatePartGame(StatePart.StatePart):
@@ -31,6 +32,7 @@ class StatePartGame(StatePart.StatePart):
         self.active_lable = activate_lable
         self.glcolor3d = glcolor3d
         self.clearcolor = clearcolor
+        self.double_space_cooldown = 0
 
         self.event_functions = [("gameloop:tick:end", self.on_update),
                                 ("user:mouse:press", self.on_mouse_press),
@@ -38,7 +40,8 @@ class StatePartGame(StatePart.StatePart):
                                 ("user:keyboard:press", self.on_key_press),
                                 ("user:keyboard:release", self.on_key_release),
                                 ("render:draw:3d", self.on_draw_3d),
-                                ("render:draw:2d", self.on_draw_2d)]
+                                ("render:draw:2d", self.on_draw_2d),
+                                ("user:mouse:scroll", self.on_mouse_scroll)]
 
     def activate(self):
         for k in G.window.mouse_pressing:
@@ -80,19 +83,18 @@ class StatePartGame(StatePart.StatePart):
                             chunk.check_neighbors(blockpos)
                     elif G.player.gamemode == 0:
                         if self.mouse_press_time >= block.get_brake_time(item):
-                            G.player.add_to_free_place(gui.ItemStack.ItemStack(G.world.world[blockpos].get_name()))
+                            G.player.add_to_free_place(gui.ItemStack.ItemStack(G.world.get_active_dimension().
+                                                                               get_block(blockpos).get_name()))
                             chunk.remove_block(blockpos)
                             chunk.check_neighbors(blockpos)
                     # todo: check if brakeable in gamemode 2
                 if G.window.mouse_pressing[mouse.RIGHT] and previous:
                     slot = G.player.get_active_inventory_slot()
-                    if slot.itemstack.item and slot.itemstack.item.has_block() and self.mouse_press_time > 0.12:
-                        if G.player.gamemode == 1:
-                            G.world.get_active_dimension().add_block(
-                                previous, slot.itemstack.item.get_block(), kwargs={"setted_to": blockpos})
-                        elif G.player.gamemode == 2:
-                            G.world.get_active_dimension().add_block(
-                                previous, slot.itemstack.item.get_block(), kwargs={"setted_to": blockpos})
+                    if slot.itemstack.item and slot.itemstack.item.has_block() and self.mouse_press_time > 0.12 and \
+                            G.player.gamemode in (0, 1):
+                        G.world.get_active_dimension().add_block(
+                            previous, slot.itemstack.item.get_block(), kwargs={"setted_to": blockpos})
+                        if G.player.gamemode == 0:
                             slot.itemstack.amount -= 1
                             if slot.itemstack.amount == 0:
                                 slot.itemstack.clean()
@@ -144,6 +146,8 @@ class StatePartGame(StatePart.StatePart):
             G.window.dy -= dt * GRAVITY
             G.window.dy = max(G.window.dy, -TERMINAL_VELOCITY)
             dy += G.window.dy * dt
+        else:
+            dy = dt*6 if G.window.keys[key.SPACE] else (-dt*6 if G.window.keys[key.LSHIFT] else 0)
         # collisions
         x, y, z = G.window.position
         if G.player.gamemode != 3:
@@ -179,10 +183,12 @@ class StatePartGame(StatePart.StatePart):
         elif symbol == key.D and not G.window.keys[key.A]:
             G.window.strafe[1] = 1
         elif symbol == key.SPACE:
-            if G.window.dy == 0:
-                G.window.dy = JUMP_SPEED
-        elif symbol == key.TAB and G.player.gamemode == 1:
-            G.window.flying = not G.window.flying
+            if self.double_space_cooldown and time.time() - self.double_space_cooldown < 0.5 and G.player.gamemode == 1:
+                G.window.flying = not G.window.flying
+                self.double_space_cooldown = None
+            else:
+                if G.window.dy == 0:
+                    G.window.dy = JUMP_SPEED
         elif symbol in G.window.num_keys and G.player.gamemode in (0, 1):
             index = symbol - G.window.num_keys[0]
             G.player.set_active_inventory_slot(index)
@@ -198,6 +204,14 @@ class StatePartGame(StatePart.StatePart):
             G.window.strafe[1] = 0 if not G.window.keys[key.D] else 1
         elif symbol == key.D:
             G.window.strafe[1] = 0 if not G.window.keys[key.A] else -1
+        elif symbol == key.SPACE:
+            self.double_space_cooldown = time.time()
+
+    @G.eventhandler("user:mouse:scroll", callactive=False)
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        if self.activate_mouse:
+            G.player.active_inventory_slot -= scroll_y
+            G.player.active_inventory_slot = round(abs(G.player.active_inventory_slot % 9))
 
     @G.eventhandler("render:draw:3d", callactive=False)
     def on_draw_3d(self):

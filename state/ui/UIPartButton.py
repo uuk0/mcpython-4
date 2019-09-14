@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -11,7 +11,8 @@ import event.EventInfo
 import enum
 import pyglet
 from pyglet.window import mouse
-import texture.helpers
+import util.texture
+import ResourceLocator
 
 
 class ButtonMode(enum.Enum):
@@ -22,42 +23,42 @@ class ButtonMode(enum.Enum):
 
 IMAGE_DICT = {}  # ButtonMode -> [NW, NM, NE, MW, MM, ME, SW, SM, SE] as 10x10 images loaded in pyglet as corner
 
-button_file = texture.helpers.load_image("gui/widgets")
+button_file = ResourceLocator.read("gui/widgets", "pil")
 
 IMAGE_DICT[ButtonMode.ENABLED] = [
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 66, 10, 76))),  # NW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 71, 10, 81))),  # NM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 76, 10, 86))),  # NE
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 66, 20, 76))),  # MW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 71, 20, 81))),  # MM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 76, 20, 86))),  # ME
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 66, 200, 76))),  # SW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 71, 200, 81))),  # SM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 76, 200, 86)))  # SE
+    util.texture.to_pyglet_sprite(button_file.crop((0, 66, 10, 76))),  # NW
+    util.texture.to_pyglet_sprite(button_file.crop((0, 71, 10, 81))),  # NM
+    util.texture.to_pyglet_sprite(button_file.crop((0, 76, 10, 86))),  # NE
+    util.texture.to_pyglet_sprite(button_file.crop((10, 66, 20, 76))),  # MW
+    util.texture.to_pyglet_sprite(button_file.crop((10, 71, 20, 81))),  # MM
+    util.texture.to_pyglet_sprite(button_file.crop((10, 76, 20, 86))),  # ME
+    util.texture.to_pyglet_sprite(button_file.crop((190, 66, 200, 76))),  # SW
+    util.texture.to_pyglet_sprite(button_file.crop((190, 71, 200, 81))),  # SM
+    util.texture.to_pyglet_sprite(button_file.crop((190, 76, 200, 86)))  # SE
 ]
 
 IMAGE_DICT[ButtonMode.DISABLED] = [
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 46, 10, 56))),  # NW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 51, 10, 61))),  # NM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 56, 10, 66))),  # NE
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 46, 20, 56))),  # MW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 51, 20, 61))),  # MM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 56, 20, 66))),  # ME
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 46, 200, 56))),  # SW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 51, 200, 61))),  # SM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 56, 200, 66)))  # SE
+    util.texture.to_pyglet_sprite(button_file.crop((0, 46, 10, 56))),  # NW
+    util.texture.to_pyglet_sprite(button_file.crop((0, 51, 10, 61))),  # NM
+    util.texture.to_pyglet_sprite(button_file.crop((0, 56, 10, 66))),  # NE
+    util.texture.to_pyglet_sprite(button_file.crop((10, 46, 20, 56))),  # MW
+    util.texture.to_pyglet_sprite(button_file.crop((10, 51, 20, 61))),  # MM
+    util.texture.to_pyglet_sprite(button_file.crop((10, 56, 20, 66))),  # ME
+    util.texture.to_pyglet_sprite(button_file.crop((190, 46, 200, 56))),  # SW
+    util.texture.to_pyglet_sprite(button_file.crop((190, 51, 200, 61))),  # SM
+    util.texture.to_pyglet_sprite(button_file.crop((190, 56, 200, 66)))  # SE
 ]
 
 IMAGE_DICT[ButtonMode.HOVERING] = [
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 86, 10, 96))),  # NW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 91, 10, 101))),  # NM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (0, 96, 10, 106))),  # NE
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 86, 20, 96))),  # MW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 91, 20, 101))),  # MM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (10, 96, 20, 106))),  # ME
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 86, 200, 96))),  # SW
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 91, 200, 101))),  # SM
-    texture.helpers.to_pyglet_sprite(texture.helpers.get_image_part(button_file, (190, 96, 200, 106)))  # SE
+    util.texture.to_pyglet_sprite(button_file.crop((0, 86, 10, 96))),  # NW
+    util.texture.to_pyglet_sprite(button_file.crop((0, 91, 10, 101))),  # NM
+    util.texture.to_pyglet_sprite(button_file.crop((0, 96, 10, 106))),  # NE
+    util.texture.to_pyglet_sprite(button_file.crop((10, 86, 20, 96))),  # MW
+    util.texture.to_pyglet_sprite(button_file.crop((10, 91, 20, 101))),  # MM
+    util.texture.to_pyglet_sprite(button_file.crop((10, 96, 20, 106))),  # ME
+    util.texture.to_pyglet_sprite(button_file.crop((190, 86, 200, 96))),  # SW
+    util.texture.to_pyglet_sprite(button_file.crop((190, 91, 200, 101))),  # SM
+    util.texture.to_pyglet_sprite(button_file.crop((190, 96, 200, 106)))  # SE
 ]
 
 
@@ -209,4 +210,86 @@ class UIPartButton(state.StatePart.StatePart):
         self.lable.y = y + self.size[1] // 2 - wy // 3
         self.lable.font_size = self.size[1] // 2.0
         self.lable.draw()
+
+
+class UIPartToggleButton(UIPartButton):
+    def __init__(self, size, textpossibilitys, position,
+                 toggle=event.EventInfo.MousePressEventInfo(pyglet.window.mouse.LEFT),
+                 retoggle=event.EventInfo.MousePressEventInfo(pyglet.window.mouse.RIGHT),
+                 anchor_button="WS", anchor_window="WS", on_toggle=None, on_hover=None, on_try_press=None,
+                 enabled=True, has_hovering_state=True, text_constructor="{}", start=0):
+        """
+        creates an new UIPartButton
+        :param size: the size of the button
+        :param textpossibilitys: the texts of the button
+        :param position: the position of the button
+        :param toggle: the EventInfo for mouse buttons and mods, no area to define, toggle forward
+        :param retoggle: the EventInfo for mouse buttons and mods, no area to define, toggle backwards
+        :param anchor_button: the anchor on the button
+        :param anchor_window: the anchor on the window
+        :param on_toggle: callen when the button toggles, parameters: (from: str, to: str, direction: int, position:tuple)
+        :param on_hover: callen when the mouse is over the button
+        :param on_try_press: callen when button is disabled and the user presses the button
+        :param enabled: button should be clickable?
+        :param has_hovering_state: if the button gets blue when mouse is over it
+        :param text_constructor: an string.format(item) or an function(item: str) -> str entry
+        :param start: where in the array to start from
+        """
+        self.size = size
+        self.textpages = textpossibilitys
+        self.textconstructor = text_constructor
+        self.index = start
+        self.text = ""
+        self._generate_text()
+        self.position = position
+        self.toggle: event.EventInfo.MousePressEventInfo = toggle
+        self.retoggle: event.EventInfo.MousePressEventInfo = retoggle
+        self.anchor_button = anchor_button
+        self.anchor_window = anchor_window
+
+        self.on_toggle = on_toggle
+        self.on_hover = on_hover
+        self.on_try_press = on_try_press
+
+        self.event_functions = [("user:mouse:press", self.on_mouse_press),
+                                ("user:mouse:motion", self.on_mouse_motion),
+                                ("render:draw:2d", self.on_draw_2d)]
+
+        self.enabled = enabled
+        self.has_hovering_state = has_hovering_state
+        self.hovering = False
+
+        self.lable = pyglet.text.Label(text=self.text)
+
+    def _generate_text(self):
+        text = self.textpages[self.index]
+        if type(self.textconstructor) == str:
+            self.text = self.textconstructor.format(text)
+        elif callable(self.textconstructor):
+            self.text = self.textconstructor(text)
+        else:
+            self.text = text
+
+    @G.eventhandler("user:mouse:press", callactive=False)
+    def on_mouse_press(self, x, y, button, modifiers):
+        mx, my = self._get_button_base_positon()
+        sx, sy = self.size
+        self.toggle.area = self.retoggle.area = ((mx, my), (mx + sx, my + sy))
+        if self.toggle.equals(x, y, button, modifiers):
+            self.index += 1
+            if self.index >= len(self.textpages): self.index = 0
+            new = self.textpages[self.index]
+            if self.on_toggle:
+                self.on_toggle(self.text, new, 1, (x, y))
+            self._generate_text()
+        elif self.retoggle.equals(x, y, button, modifiers):
+            self.index -= 1
+            if self.index < 0: self.index = len(self.textpages) - 1
+            new = self.textpages[self.index]
+            if self.on_toggle:
+                self.on_toggle(self.text, new, -1, (x, y))
+            self._generate_text()
+        else:
+            if self.on_try_press:
+                self.on_try_press(x, y)
 

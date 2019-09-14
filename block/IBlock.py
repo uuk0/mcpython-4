@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -12,15 +12,23 @@ import gui.ItemStack
 
 
 class InjectionMode(enum.Enum):
-    PARALLEL = 0
-    IF_NO_OTHER = 1
-    REPLACE_DOWNER = 2
-    PARALLEL_THIS = 3
+    """
+    injection mode enum
+    """
+
+    PARALLEL = 0  # every other injection function that marks this is called if no upper is called
+    IF_NO_OTHER = 1  # only if no other injection gives an function for this
+    REPLACE_DOWNER = 2  # overwrites all other injections
+    PARALLEL_THIS = 3  # like REPLACE_DOWNER & PARALLEL, but only both together by 1. parallel
 
 
 class InjectAbleBlock(block.Block.Block):
-    INJECTION_CLASSES = []
-    injection_map = {}
+    """
+    base class for all blocks which are injectable
+    """
+
+    INJECTION_CLASSES = []  # a list of injection classes that should be injected
+    injection_map = {}  # a map for functions that were injected
 
     @classmethod
     def is_injected(cls): return len(cls.INJECTION_CLASSES) > 0
@@ -30,10 +38,13 @@ class InjectAbleBlock(block.Block.Block):
         # init system
         cls.injection_map = {}  # function name -> [function]
         pmode = {}
+        # walk through all injection classes and inject them
         for iblock in cls.INJECTION_CLASSES:
             if type(iblock) == str:
-                iblock = G.blockhandler.injectionclasses[iblock]
+                # read the injection class from storage
+                iblock = G.registry.get_by_name("block").get_attribute("injectionclasses")[iblock]
             ext: dict = iblock.get_functions_to_inject()
+            # iterate over all InjectionModes provided by this
             for mode in ext.keys():
                 for function in ext[mode]:
                     name, function = function.__name__, function if type(function) not in [list, set, tuple] else \
@@ -56,19 +67,21 @@ class InjectAbleBlock(block.Block.Block):
         self.call_method("on_create")
 
     def call_method(self, name, *args, **kwargs) -> list:
+        """
+        calls an injected method tree
+        :param name: the name of the function
+        :param args: the arguments to give
+        :param kwargs: the optional arguments to give
+        :return: a list of results
+        """
         if name not in self.injection_map: return []
         result = []
         for function in self.injection_map[name]:
             result.append(function(self, *args, **kwargs))
+        return result
 
     def on_delete(self):
         self.call_method("on_delete")
-
-    def get_model_name(self):
-        result = self.call_method("get_model_name")
-        for element in result:
-            if element is not None:
-                return element
 
     def is_brakeable(self) -> bool:
         result = self.call_method("is_brakeable")
@@ -97,6 +110,13 @@ class InjectAbleBlock(block.Block.Block):
             if element is not None:
                 return element
 
+    def get_model_state(self) -> dict:
+        m = {}
+        result = self.call_method("get_model_state")
+        for element in result:
+            m = {**m, **element}
+        return m
+
 
 class IBlock:
     """
@@ -107,9 +127,15 @@ class IBlock:
 
     @classmethod
     def get_functions_to_inject(cls) -> dict:
+        """
+        :return: a InjectionMode -> functionlist map
+        """
         return {InjectionMode.IF_NO_OTHER: [cls.get_functions_to_inject, cls.get_extension_name]}
 
     @staticmethod
     def get_extension_name() -> str:
+        """
+        :return: the name of the injection class
+        """
         raise NotImplementedError()
 

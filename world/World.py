@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -24,7 +24,6 @@ class World:
         self.dimensions = {}
         self.add_dimension(0, config={"configname": "default_overworld"})
         self.active_dimension = 0
-        self.batch: pyglet.graphics.Batch = pyglet.graphics.Batch()
 
     def get_active_dimension(self) -> world.Dimension.Dimension:
         return self.dimensions[self.active_dimension]
@@ -115,24 +114,24 @@ class World:
             for task in chunk.show_tasks:
                 chunk._show_block(task)
                 chunk.show_tasks.remove(task)
-                if time.time() - t > 0.1:
+                if time.time() - t > 0.02:
                     return
             for task in chunk.hide_tasks:
                 # print(task)
                 chunk._hide_block(task)
                 chunk.hide_tasks.remove(task)
-                if time.time() - t > 0.1:
+                if time.time() - t > 0.02:
                     return
             for task in chunk.chunkgenerationtasks:
                 task[0](*task[1], **task[2])
                 chunk.chunkgenerationtasks.remove(task)
-                if time.time() - t > 0.1:
+                if time.time() - t > 0.02:
                     return
             for position in list(chunk.blockmap.keys()):
                 args, kwargs = chunk.blockmap[position]
                 chunk.add_block(*args, **kwargs)
                 del chunk.blockmap[position]
-                if time.time() - t > 0.1:
+                if time.time() - t > 0.02:
                     return
             chunk.is_ready = \
                 len(chunk.show_tasks) == len(chunk.hide_tasks) == len(chunk.chunkgenerationtasks) == len(chunk.blockmap)
@@ -159,7 +158,7 @@ class World:
             chunk.blockmap = {}
             chunk.is_ready = True
 
-    def cleanup(self):
+    def cleanup(self, remove_dims=False):
         for dimension in self.dimensions.values():
             dimension: world.Dimension.Dimension
             for chunk in dimension.chunks.values():
@@ -167,4 +166,6 @@ class World:
                 chunk.world = {}
                 chunk.is_ready = False
             dimension.chunks = {}
+        if remove_dims:
+            self.dimensions = {}
 

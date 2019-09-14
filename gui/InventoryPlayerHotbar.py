@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -9,19 +9,22 @@ import globals as G
 import gui.Inventory
 import gui.InventoryHandler
 import gui.Slot
-import texture.helpers
+import pyglet
 import ResourceLocator
 
 
 class InventoryPlayerHotbar(gui.Inventory.Inventory):
+    """
+    main inventory for the hotbar
+    """
+
     def __init__(self):
         gui.Inventory.Inventory.__init__(self)
-        self.selected_sprite = texture.helpers.to_pyglet_sprite(
-            ResourceLocator.ResourceLocator("tmp/gui/selected_slot.png").data)
+        self.selected_sprite = pyglet.sprite.Sprite(ResourceLocator.read("tmp/gui/selected_slot.png", "pyglet"))
 
     @staticmethod
     def get_config_file():
-        return G.local+"/assets/config/inventory/playerinventoryhorbar.json"
+        return "assets/config/inventory/playerinventoryhotbar.json"
 
     def is_blocking_interactions(self) -> bool:
         return False

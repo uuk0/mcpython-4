@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -39,10 +39,13 @@ class WorldGenerationHandler:
         print("generating", chunk.position)
         dimension = chunk.dimension
         configname = dimension.worldgenerationconfig["configname"]
-        for layername in self.configs[configname]["layers"]:
+        m = len(self.configs[configname]["layers"])
+        for i, layername in enumerate(self.configs[configname]["layers"]):
+            print("\rgenerating layer {} ({}/{})".format(layername, i+1, m), end="")
             layer = self.layers[layername]
             layer.add_generate_functions_to_chunk(dimension.worldgenerationconfigobjects[layername], chunk)
             G.world.process_entire_queue()
+        print("\r", end="")
 
     def register_layer(self, layer: world.gen.layer.Layer.Layer):
         # print(layer, layer.get_name())
@@ -69,5 +72,5 @@ class WorldGenerationHandler:
 G.worldgenerationhandler = WorldGenerationHandler()
 
 from world.gen.layer import (DefaultBedrockLayer, DefaultLandMassLayer, DefaultTemperatureLayer, DefaultBiomeLayer,
-                             DefaultHighMapLayer, DefaultStonePlacementLayer, DefaultTopLayerLayer)
+                             DefaultHeightMapLayer, DefaultStonePlacementLayer, DefaultTopLayerLayer, DefaultTreeLayer)
 from world.gen.mode import DefaultOverWorldGenerator

@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -20,7 +20,7 @@ class Dimension:
         self.worldgenerationconfig = genconfig
         self.worldgenerationconfigobjects = {}
         # normal batch
-        self.batches = [pyglet.graphics.Batch()]
+        self.batches = [pyglet.graphics.Batch() for _ in range(2)]  # normal, alpha
 
     def get_chunk(self, cx, cz, generate=True, create=True) -> world.Chunk.Chunk or None:
         if (cx, cz) not in self.chunks:
@@ -38,7 +38,7 @@ class Dimension:
 
     def get_block(self, position):
         chunk = self.get_chunk_for_position(position, generate=False)
-        return chunk.world[position] if position in chunk.world else None
+        return chunk.get_block(position)
 
     def add_block(self, position: tuple, blockname: str, immediate=True, block_update=True, args=[], kwargs={}):
         self.get_chunk_for_position(position).add_block(position, blockname, immediate=immediate,
@@ -64,5 +64,10 @@ class Dimension:
                 chunk = self.get_chunk(cx, cz, create=False)
                 if chunk:
                     chunk.draw()
-        [x.draw() for x in self.batches]
+        self.batches[0].draw()
+
+        # draw with alpha
+        pyglet.gl.glEnable(pyglet.gl.GL_BLEND)
+        pyglet.gl.glBlendFunc(pyglet.gl.GL_SRC_ALPHA, pyglet.gl.GL_ONE_MINUS_SRC_ALPHA)
+        self.batches[1].draw()
 

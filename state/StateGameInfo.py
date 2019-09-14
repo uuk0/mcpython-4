@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -9,13 +9,12 @@ import globals as G
 import state.State
 import state.StatePartGame
 from state.ui import UIPartButton, UIPartImage, UIPartLable
-import texture.helpers
+import util.texture
 import ResourceLocator
 from pyglet.window import key, mouse
 
 
-sprite = texture.helpers.to_pyglet_sprite(
-    ResourceLocator.ResourceLocator("assets/minecraft/textures/gui/demo_background.png").data.crop((0, 0, 248, 166)))
+sprite = util.texture.to_pyglet_sprite(ResourceLocator.read("gui/demo_background", mode="pil").crop((0, 0, 248, 166)))
 
 
 class StateGameInfo(state.State.State):

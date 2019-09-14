@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -9,15 +9,22 @@ import globals as G
 import gui.Inventory
 import gui.Slot
 import gui.ItemStack
+import crafting.CraftingHandler
+import crafting.GridRecipeInterface
 
 
 class InventoryPlayerMain(gui.Inventory.Inventory):
+    """
+    inventory class for the main part of the inventory
+    """
+
     @staticmethod
     def get_config_file() -> str or None:
-        return G.local+"/assets/config/inventory/playerinventorymain.json"
+        return "assets/config/inventory/playerinventorymain.json"
 
     def on_create(self):
-        pass
+        inputs = [self.slots[40:42], self.slots[42:44]]
+        self.recipeinterface = crafting.GridRecipeInterface.GridRecipeInterface(inputs, self.slots[44])
 
     def create_slots(self) -> list:
         # 9x hotbar, 27x main, 4x armor, 5x crafting, 1x offhand

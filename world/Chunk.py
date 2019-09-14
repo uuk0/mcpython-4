@@ -1,16 +1,17 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
 import globals as G
 import pyglet
-import block.Block
+import block.Block as Block
 from util.math import *
 import config
 from typing import Dict, List
+import util.math
 
 
 class Chunk:
@@ -54,16 +55,15 @@ class Chunk:
             return
 
     def exposed(self, position):
-        """ Returns False is given `position` is surrounded on all 6 sides by
-        blocks, True otherwise.
+        """ Returns False is given `position` should be hidden, True otherwise.
 
         """
         x, y, z = position
-        for dx, dy, dz in config.FACES:
-            # todo: add solid-check
+        for i, (dx, dy, dz) in enumerate(config.FACES):
             pos = (x + dx, y + dy, z + dz)
-            chunk = self.dimension.get_chunk_for_position(pos, generate=False)
-            if pos not in chunk.world:
+            block = self.dimension.get_block(pos)
+            if not (block and (block.is_solid_side(config.FACE_NAMES[i]) if type(block) != str else
+                               G.registry.get_by_name("block").get_attribute("blocks")[block].is_solid_side(None, config.FACE_NAMES[i]))):
                 return True
         return False
 
@@ -87,16 +87,18 @@ class Chunk:
             Whether or not to draw the block immediately.
 
         """
+        if position != util.math.normalize(position):
+            raise ValueError("position {} is no valid block position".format(position))
         # print("adding", block_name, "at", position)
         if position in self.world:
             self.remove_block(position, immediate=immediate, block_update=block_update)
         if position[1] < 0 or position[1] > 255: return
         if block_name in [None, "air", "minecraft:air"]: return
-        if issubclass(type(block_name), block.Block.Block):
+        if issubclass(type(block_name), Block.Block):
             blockobj = block_name
             blockobj.position = position
         else:
-            blockobj = G.blockhandler.blocks[block_name](position, *args, **kwargs)
+            blockobj = G.registry.get_by_name("block").get_attribute("blocks")[block_name](position, *args, **kwargs)
         self.world[position] = blockobj
         if immediate:
             if self.exposed(position):
@@ -111,8 +113,8 @@ class Chunk:
             for dy in range(-1, 2):
                 for dz in range(-1, 2):
                     if [dx, dy, dz].count(0) >= 2:
-                        b: block.Block.Block = self.dimension.get_block((x+dx, y+dy, z+dz))
-                        if b:
+                        b: Block.Block = self.dimension.get_block((x+dx, y+dy, z+dz))
+                        if b and type(b) != str:
                             b.on_block_update()
 
     def remove_block(self, position, immediate=True, block_update=True):
@@ -128,7 +130,7 @@ class Chunk:
         """
         # print("removing", self.world[position] if position in self.world else None, "at", position)
         if position not in self.world: return
-        if issubclass(type(position), block.Block.Block):
+        if issubclass(type(position), Block.Block):
             position = position.position
         self.world[position].on_delete()
         if immediate:
@@ -172,7 +174,7 @@ class Chunk:
             Whether or not to show the block immediately.
 
         """
-        if type(position) == block.Block.Block:
+        if type(position) == Block.Block:
             position = position.position
         if position not in self.world: return
         if position in self.shown:
@@ -197,7 +199,7 @@ class Chunk:
 
         """
         # print("showing", position)
-        self.shown[position] = G.modelloader.show_block(self.dimension.batches, position, block.get_model_name())
+        self.shown[position] = G.modelhandler.add_to_batch(block, position, self.dimension.batches)
         # print(self.world[position], self.shown[position])
 
     def hide_block(self, position, immediate=True):
@@ -212,7 +214,7 @@ class Chunk:
             Whether or not to immediately remove the block from the canvas.
 
         """
-        if type(position) == block.Block.Block:
+        if type(position) == Block.Block:
             position = position.position
         if position not in self.shown: return
         if immediate:
@@ -254,5 +256,6 @@ class Chunk:
             self.hide_block(position, immediate=immediate)
 
     def get_block(self, position):
-        return self.blockmap[position][0][1] if position in self.blockmap else self.world[position]
+        return self.blockmap[position][0][1] if position in self.blockmap else (self.world[position] if position in
+                                                                                self.world else None)
 

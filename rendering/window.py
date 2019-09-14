@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -125,29 +125,14 @@ class Window(pyglet.window.Window):
             strafe = math.degrees(math.atan2(*self.strafe))
             y_angle = math.radians(y)
             x_angle = math.radians(x + strafe)
-            if self.flying:
-                m = math.cos(y_angle)
-                dy = math.sin(y_angle)
-                if self.strafe[1]:
-                    # Moving left or right.
-                    dy = 0.0
-                    m = 1
-                if self.strafe[0] > 0:
-                    # Moving backwards.
-                    dy *= -1
-                # When you are flying up or down, you have less left and right
-                # motion.
-                dx = math.cos(x_angle) * m
-                dz = math.sin(x_angle) * m
-            else:
-                dy = 0.0
-                dx = math.cos(x_angle)
-                dz = math.sin(x_angle)
+            dy = 0.0
+            dx = math.cos(x_angle)
+            dz = math.sin(x_angle)
         else:
             dy = 0.0
             dx = 0.0
             dz = 0.0
-        return (dx, dy, dz)
+        return dx, dy, dz
 
     def update(self, dt):
         """ This method is scheduled to be called repeatedly by the pyglet
@@ -194,10 +179,10 @@ class Window(pyglet.window.Window):
         # have to count as a collision. If 0, touching terrain at all counts as
         # a collision. If .49, you sink into the ground, as if walking through
         # tall grass. If >= .5, you'll fall through the ground.
-        pad = 0.25
+        pad = 0.1
         p = list(position)
         np = normalize(position)
-        for face in FACES:  # check all surrounding blocks
+        for face in ADVANCED_FACES:  # check all surrounding blocks
             for i in range(3):  # check each dimension independently
                 if not face[i]:
                     continue
@@ -247,6 +232,9 @@ class Window(pyglet.window.Window):
         G.eventhandler.call("user:mouse:drag", x, y, dx, dy, buttons, modifiers)
         if self.exclusive:
             self.on_mouse_motion(x, y, dx, dy)
+
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        G.eventhandler.call("user:mouse:scroll", x, y, scroll_x, scroll_y)
 
     def on_mouse_motion(self, x, y, dx, dy):
         """ Called when the player moves the mouse.
@@ -360,7 +348,7 @@ class Window(pyglet.window.Window):
         block = G.world.hit_test(self.position, vector)[0]
         if block:
             x, y, z = block
-            vertex_data = cube_vertices(x, y, z, 0.51)
+            vertex_data = cube_vertices(x, y, z, 0.51, 0.51, 0.51)
             glColor3d(0, 0, 0)
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
             pyglet.graphics.draw(24, GL_QUADS, ('v3f/static', vertex_data))

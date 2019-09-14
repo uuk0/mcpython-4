@@ -1,7 +1,7 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
@@ -29,28 +29,28 @@ try:
 
     os.makedirs(G.local+"/tmp")
 
-    import zipfile
+    import ResourceLocator
+    ResourceLocator.load_resources()
 
-    G.jar_archive = zipfile.ZipFile(G.local+"/assets/1.14.4.jar")
-
-    import texture.atlas
+    # import texture.atlas
 
     print("generating textures...")
     import texture.factory
-
-    G.texturefactoryhandler.add_location(G.local + "/assets/factory/texture")
-    G.texturefactoryhandler.build()
+    G.texturefactoryhandler.load()
 
     import world.World
     G.world = world.World.World()
+
+    import texture.model.ModelHandler
+    import texture.model.BlockState
 
     print("loading blocks...")
     import block.BlockHandler
     block.BlockHandler.load()
 
-    import texture.ModelLoader
     print("searching for models...")
-    texture.ModelLoader.loader.search_in_main_jar()
+    G.modelhandler.search()
+    texture.model.BlockState.BlockStateDefinition.from_directory("assets/minecraft/blockstates")
     print("finished!")
 
     import world.gen.WorldGenerationHandler
@@ -59,18 +59,10 @@ try:
     def setup():
         opengl_setup.setup()
         print("generating models...")
-        texture.ModelLoader.loader.build()
-        G.modelloader.from_data(
-            "missing_texture",
-            {
-                "parent": "block/cube_all",
-                "textures": {
-                    "all": "assets/missingtexture.png"
-                }
-            }
-        )
+        G.modelhandler.build()
         print("generating image atlases...")
-        texture.atlas.generator.build()
+        import texture.TextureAtlas
+        texture.TextureAtlas.handler.output()
         print("finished!")
 
     def run():
@@ -84,11 +76,12 @@ try:
         event.EventHandler.handler.call("game:startup")
         setup()
         event.EventHandler.handler.call("game:load_finished")
+        """
         print("------------------")
         print("- Game Info Area -")
         print("------------------")
         print("blocks (loaded):\n -count: {}\n -blockmodel count: {}\n -injection class count: {}".format(
-            len(G.blockhandler.blockclasses), len(G.blockhandler.used_models), len(G.blockhandler.injectionclasses)
+            len(G.registry.get_by_name("block").registered_objects), len(G.modelhandler.used_models), len(G.registry.get_by_name("block").get_attribute("injectionclasses"))
         ))
         print("items (loaded): count: {}".format(len(G.itemhandler.items)))
         print("commands (loaded):\n -count: {}".format(len(G.commandhandler.commands)))
@@ -100,16 +93,14 @@ try:
         print("states (loaded): count: {}".format(len(G.statehandler.states)))
         print("generation layers (loaded): count: {}".format(len(G.worldgenerationhandler.layers)))
         print("generation configurations (loaded): count: {}".format(len(G.worldgenerationhandler.configs)))
-        print("biomes (loaded): count: {}".format(len(G.biomehandler.biomes)))
+        print("biomes (loaded): count: {}".format(len(G.biomehandler.biomes)))"""
         print("----------------------------------------------")
         print("- END OF LOADING. NOW STARTING UPDATE CYCLUS -")
         print("----------------------------------------------")
         run()
 except:
-    import sys
-    import globals as G
-    if G.jar_archive:
-        G.jar_archive.close()
+    import ResourceLocator
+    ResourceLocator.close_all_resources()
     raise
 
 
@@ -117,5 +108,6 @@ if __name__ == "__main__":
     try:
         main()
     finally:
-        G.jar_archive.close()
+        import ResourceLocator
+        ResourceLocator.close_all_resources()
 

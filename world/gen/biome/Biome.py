@@ -1,11 +1,12 @@
 """mcpython - a minecraft clone written in python licenced under MIT-licence
-authors: uuk
+authors: uuk, xkcdjerry
 
-orginal game by forgleman licenced under MIT-licence
+original game by forgleman licenced under MIT-licence
 minecraft by Mojang
 
 blocks based on 1.14.4.jar of minecraft, downloaded on 20th of July, 2019"""
 import globals as G
+import world.gen.feature.IOre as ores
 
 
 class Biome:
@@ -26,14 +27,27 @@ class Biome:
         return 10
 
     @staticmethod
-    def get_high_range():
+    def get_height_range():
         return [10, 30]
 
     @staticmethod
-    def get_top_layer_high_range():
+    def get_top_layer_height_range():
         return [3, 5]
 
     @staticmethod
-    def get_top_layer_configuration(high: int):
-        return ["minecraft:dirt"] * (high - 1) + ["minecraft:grass_block"]
+    def get_top_layer_configuration(height: int):
+        return ["minecraft:dirt"] * (height - 1) + ["minecraft:grass_block"]
+
+    @staticmethod
+    def get_trees() -> list:
+        """
+        :return: an (IFeature, chance as n)[
+        """
+
+    @staticmethod
+    def get_ores() -> list:
+        """
+        :return: an IOre[
+        """
+        return [ores.CoalOre]
 
