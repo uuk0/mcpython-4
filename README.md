@@ -1,2 +1,2 @@
 # mcpython-4
-these is the fours version of an minecraft-like, python-written game based on forgleman's code
+these is the fourth version of an minecraft-like, python-written game based on forgleman's code.
