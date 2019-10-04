@@ -23,7 +23,7 @@ class InventoryCraftingTable(gui.Inventory.Inventory):
         return "assets/config/inventory/blockinventorycraftingtable.json"
 
     def on_create(self):
-        inputs = [self.slots[1:3], self.slots[3:6], self.slots[6:9]]
+        inputs = [self.slots[:3], self.slots[3:6], self.slots[6:9]]
         self.recipeinterface = crafting.GridRecipeInterface.GridRecipeInterface(inputs, self.slots[9])
 
     def create_slots(self) -> list:
@@ -36,7 +36,7 @@ class InventoryCraftingTable(gui.Inventory.Inventory):
             G.player.add_to_free_place(slot.itemstack)
             slot.itemstack = gui.ItemStack.ItemStack.get_empty()
 
-    def draw(self):
+    def draw(self, hoveringslot=None):
         """
         draws the inventory
         """
@@ -47,7 +47,7 @@ class InventoryCraftingTable(gui.Inventory.Inventory):
             self.bgsprite.draw()
         self.on_draw_over_backgroundimage()
         for slot in G.player.inventorys["main"].slots[:36] + self.slots:
-            slot.draw(x, y)
+            slot.draw(x, y, hovering=slot == hoveringslot)
         self.on_draw_over_image()
         for slot in self.slots:
             slot.draw_lable()
