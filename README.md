@@ -7,7 +7,7 @@ Watch us and submit to it at www.github.com/uuk0/mcpython-4
 
 How to setup?
 -----------------------------------------------------------------------------------------------------
-download python 3.x or any other 3.x version (x>=4)
+download any python 3.x version (x>=4)
 
 download these project, extract it, open the console in this directory and type
 
@@ -30,5 +30,5 @@ Please run the project with
 ```shell script
 python __main__.py --rebuild
 ```
- It will take longer than normal but will invalidate the cache and rebuild .
+ It will take longer than normal but will invalidate the cache and rebuild.
 
