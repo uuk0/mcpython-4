@@ -1,0 +1,2 @@
+A file for quick and dirty pip install.
+Usage: pip install -r requirements.txt
