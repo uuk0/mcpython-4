@@ -18,8 +18,8 @@ pip install -r requirements.txt
 How to run?
 -----------------------------------------------------------------------------------------------------
 Type in console
-```shell script
-python __main__.py".
+```shell scriptp
+python __main__.py
 ```
 
 
